@@ -1,24 +1,34 @@
-use actix_web::{HttpServer, App, web, Responder};
+use actix_web::{HttpServer, App, web};
 use std::io;
+use dotenv::dotenv;
+use tokio_postgres::NoTls;
 
 mod models;
-use crate::models::Status;
+mod config;
+mod db;
+mod handlers;
 
-async fn status() -> impl Responder {
-   web::HttpResponse::Ok()
-                .json(Status {status: "Ok".to_string()})
-}
+
+use crate::handlers::*;
 
 #[actix_rt::main]
 async fn main() -> io::Result<()>{
 
-    println! ("Server running on 127.0.0.1:8000");
+    dotenv().ok();
 
-    HttpServer::new(|| {
+    let config = crate::config::Config::from_env().unwrap();
+
+    let pool = config.pg.create_pool(NoTls).unwrap();
+
+    println! ("Server running on http://{}:{}", config.server.host, config.server.port);
+
+    HttpServer::new(move || {
         App::new()
+            .data(pool.clone())
             .route("/", web::get().to(status))
+            .route("/todos{_:/?}", web::get().to(get_todos))
     })
-    .bind("127.0.0.1:8000")?
+    .bind(format!("{}:{}", config.server.host, config.server.port))?
     .run()
     .await
 
