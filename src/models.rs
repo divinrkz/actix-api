@@ -20,5 +20,10 @@ pub struct TodoItem {
     pub id: i32,
     pub title: String,
     pub check: bool,
-    pub list_id: i32 
+    pub list_id: i32,
+}
+
+#[derive(Deserialize)]
+pub struct CreateTodoList {
+    pub title: String
 }
