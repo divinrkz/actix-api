@@ -18,7 +18,7 @@ pub async fn get_todos(client: &Client) -> Result<Vec<TodoList>, io::Error> {
 
 
  pub async fn get_items(client: &Client, list_id: i32) -> Result<Vec<TodoItem>, io::Error> {
-     let statement = client.prepare("SELECT * FROM todo_item").await.unwrap();
+     let statement = client.prepare("SELECT * FROM todo_item where list_id = $1").await.unwrap();
 
      let todos = client.query(&statement, &[&list_id])
                         .await
@@ -43,3 +43,16 @@ pub async fn get_todos(client: &Client) -> Result<Vec<TodoList>, io::Error> {
             .pop()
             .ok_or(io::Error::new(io::ErrorKind::Other, "Error creting todo list"))
  }
+
+ pub async fn check_item(client: &Client, list_id: i32, item_id: i32) -> Result<(), io::Error> {
+    let statement = client.prepare("UPDATE todo_item SET checked = true WHERE list_id = $1 and id = $2 and checked = false").await.unwrap();
+
+    let result = client.execute(&statement, &[&list_id, &item_id])
+                       .await
+                       .expect("Error checking todo items");
+
+    match result {
+        ref updated if *updated == 1 => Ok(()),
+        _ => Err(io::Error::new(io::ErrorKind::Other, "Failed to check the Id"))
+    }              
+}

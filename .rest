@@ -1,18 +1,22 @@
-GET http://localhost:8000
+GET http://localhost:8080
 
 ###
-GET http://localhost:8000/todos/
-
-
-###
-GET http://localhost:8000/todos/1/items
+GET http://localhost:8080/todos
 
 
 ###
+GET http://localhost:8080/todos/1/items
 
-POST http://localhost:8000/todos
+
+###
+POST http://localhost:8080/todos
 Content-Type: application/json
 
 {
     "title": "Love Rust"
 }
+
+
+###
+PUT http://localhost:8080/todos/1/items/1
+Content-Type: application/json
